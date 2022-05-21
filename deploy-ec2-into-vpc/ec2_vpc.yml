@@ -1,0 +1,53 @@
+# A cloud formation script to Create an EC2 instance in a given VPC
+# Author: Michael Bali
+
+#parameters
+Parameters:
+  myVPC:
+      Description: VPC used to deploy our resources below
+      Type: AWS::EC2::VPC::Id
+  PublicSubnet:
+      Description: Subnet to be used for our Web Server
+      Type: AWS::EC2::Subnet::Id
+  AMItoUse:
+      Description: AMI to use for our base image
+      Type: String
+Resources:
+  #Deploy a Security Group
+  myWebAccessSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow inbound access on TCP port 80
+      VpcId:
+        Ref: myVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        FromPort: -1
+        ToPort: -1
+        CidrIp: 0.0.0.0/0
+  #deploy ec2
+  mywebServerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: "t3.micro"
+      ImageId: !Ref AMItoUse
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet:
+            - Ref: "myWebAccessSecurityGroup"
+          SubnetId:
+            Ref: "PublicSubnet"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo yum update -y
+          sudo yum install -y httpd
+          sudo systemctl start httpd
+          sudo systemctl enable httpd
+

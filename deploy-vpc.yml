@@ -1,0 +1,12 @@
+#cloudformation script to deploy a VPC
+AWSTemplateFormatVersion: 2010-09-09
+Description: Michael Bali / udacity - This template deloys a VPV
+Resources:
+  UdacityVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: 'true'
+      Tags:
+      - Key: name
+        Value: myfirstvpc
